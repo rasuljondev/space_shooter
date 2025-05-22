@@ -21,9 +21,11 @@ public class UIManager : MonoBehaviour
     [SerializeField]
     private GameManager _gameManager;
 
+    [SerializeField]
+    private Text _levelMessageText; 
 
-   
-   
+
+
     void Start()
     {
 
@@ -78,4 +80,18 @@ public class UIManager : MonoBehaviour
          yield return new WaitForSeconds(0.5f);
     }
   }
+    public void ShowLevelMessage(string message)
+    {
+        // You need a Text UI element in your Canvas, e.g., _levelMessageText
+        StartCoroutine(ShowLevelMessageRoutine(message));
+    }
+
+    private IEnumerator ShowLevelMessageRoutine(string message)
+    {
+        _levelMessageText.text = message;
+        _levelMessageText.gameObject.SetActive(true);
+        yield return new WaitForSeconds(2f); // Show for 2 seconds
+        _levelMessageText.gameObject.SetActive(false);
+    }
+
 }

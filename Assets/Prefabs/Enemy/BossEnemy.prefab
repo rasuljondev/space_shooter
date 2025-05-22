@@ -165,7 +165,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   _moveSpeed: 2
-  _moveToY: 0
+  _moveToY: 4
   _lives: 10
   _bossShotPrefab: {fileID: 1673074413772396464, guid: f88dbe40e0785c44ea9c8f8f9a9995aa,
     type: 3}

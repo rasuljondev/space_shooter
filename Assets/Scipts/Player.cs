@@ -442,19 +442,20 @@ public class Player : MonoBehaviour
         _score += points;
         _uiManager.UpdateScore(_score);
 
-        // Level up at 30 points
-        if (_level == 1 && _score >= 30)
+        if (_level == 1 && _score >= 50)
         {
             _level = 2;
             if (OnLevelUp != null)
                 OnLevelUp(_level);
+            _uiManager.ShowLevelMessage("LVL 2 Started");
         }
-        // Level 3 at 50 points
-        else if (_level == 2 && _score >= 50)
+        else if (_level == 2 && _score >= 100)
         {
             _level = 3;
             if (OnLevelUp != null)
                 OnLevelUp(_level);
+            _uiManager.ShowLevelMessage("LVL 3 Started");
         }
     }
+
 }

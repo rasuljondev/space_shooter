@@ -5,7 +5,7 @@ public class BossEnemy : MonoBehaviour
     [SerializeField]
     private float _moveSpeed = 2f;
     [SerializeField]
-    private float _moveToY = 6f;
+    private float _moveToY = 7f;
     [SerializeField]
     private int _lives = 10;
     [SerializeField]
