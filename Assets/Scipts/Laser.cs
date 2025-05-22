@@ -3,7 +3,7 @@
 public class Laser : MonoBehaviour
 {
     [SerializeField]
-    private float _speed = 8f;
+    public float _speed = 8f;
     private bool _isEnemyLaser = false;
     private bool _isBackLaser = false;
     public bool IsEnemyLaser { get; set; } = false;

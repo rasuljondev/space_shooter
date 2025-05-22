@@ -49,30 +49,22 @@ public class SpawnManager : MonoBehaviour
             int randomValue = Random.Range(0, 100);
             int randomPowerup;
 
-            if (randomValue < 80)
-            {
-                int randomValue2 = Random.Range(0, 100);
-                if (randomValue2 < 50)
-                    randomPowerup = 3; 
-                else if (randomValue2 < 80)
-                    randomPowerup = 2; 
-                else if (randomValue2 < 90)
-                    randomPowerup = 0; 
-                else if (randomValue2 < 95)
-                    randomPowerup = 1; 
-                else
-                    randomPowerup = 4; 
-            }
-            else
-            {
-                int randomValue3 = Random.Range(0, 100);
-                if (randomValue3 < 40)
-                    randomPowerup = 6; 
-                else if (randomValue3 < 80)
-                    randomPowerup = 5; 
-                else
-                    randomPowerup = 7; 
-            }
+            if (randomValue < 9) // 0-8: 9%
+                randomPowerup = 0; // triple
+            else if (randomValue < 14) // 9-13: 5%
+                randomPowerup = 1; // speed
+            else if (randomValue < 39) // 14-38: 25%
+                randomPowerup = 2; // shield
+            else if (randomValue < 76) // 39-75: 37%
+                randomPowerup = 3; // ammo
+            else if (randomValue < 81) // 76-80: 5%
+                randomPowerup = 4; // health
+            else if (randomValue < 86) // 81-85: 5%
+                randomPowerup = 5; // negative
+            else if (randomValue < 95) // 86-94: 9%
+                randomPowerup = 6; // rocket
+            else // 95-99: 5%
+                randomPowerup = 7; // missile
 
             if (randomPowerup >= 0 && randomPowerup < _powerups.Length)
             {
@@ -84,6 +76,8 @@ public class SpawnManager : MonoBehaviour
                 Debug.LogWarning($"Invalid powerup index: {randomPowerup}. Check _powerups array length.");
             }
         }
+
+
     }
 
     void OnEnable()
@@ -102,6 +96,7 @@ public class SpawnManager : MonoBehaviour
         if (_currentLevel == 2)
         {
             _enemySpawnRate = 4f;
+            StartCoroutine(Level2Sequence());
         }
         else if (_currentLevel == 3 && !_bossSpawned)
         {
@@ -113,8 +108,8 @@ public class SpawnManager : MonoBehaviour
 
     private IEnumerator Level3Sequence()
     {
-        
 
+        yield return new WaitForSeconds(2f);
         // Spawn 5 
         int waveCount = 5;
         for (int i = 0; i < waveCount; i++)
@@ -133,6 +128,23 @@ public class SpawnManager : MonoBehaviour
         GameObject boss = Instantiate(_bossPrefab, bossSpawnPos, Quaternion.identity);
         boss.transform.parent = _enemyContainer.transform;
         Debug.Log("SpawnManager: Boss spawned.");
+    }
+    private IEnumerator Level2Sequence()
+    {
+
+        yield return new WaitForSeconds(2f);
+        // Spawn 5 
+        int waveCount = 5;
+        for (int i = 0; i < waveCount; i++)
+        {
+            Vector3 spawnPosition = new Vector3(Random.Range(-8f, 8f), 7, 0);
+            int randomEnemy = Random.Range(0, _enemyPrefabs.Length);
+            GameObject newEnemy = Instantiate(_enemyPrefabs[randomEnemy], spawnPosition, Quaternion.identity);
+            newEnemy.transform.parent = _enemyContainer.transform;
+            yield return new WaitForSeconds(0.5f);
+        }
+
+      
     }
 
     public void OnPlayerDeath()

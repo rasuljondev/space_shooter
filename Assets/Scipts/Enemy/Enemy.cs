@@ -22,6 +22,7 @@ public class Enemy : MonoBehaviour
     protected AudioSource _audioSource;
     protected float _fireRate = 2.0f;
     protected float _canFire = -1f;
+    protected bool _isDestroyed = false; // Track destruction state
 
     // Side-to-side movement settings
     [Header("Side-to-Side Settings")]
@@ -36,27 +37,30 @@ public class Enemy : MonoBehaviour
     [SerializeField]
     protected float _angle = 30f; // degrees
 
-    // Use virtual so derived classes can override
     protected virtual void Start()
     {
-        _player = GameObject.Find("Player").GetComponent<Player>();
+        _player = GameObject.Find("Player")?.GetComponent<Player>();
         _audioSource = GetComponent<AudioSource>();
         if (_player == null)
         {
-            Debug.LogError("Player is NULL.");
+            Debug.LogError("Enemy: Player is NULL.");
         }
         _animator = GetComponent<Animator>();
         if (_animator == null)
         {
-            Debug.LogError("Animator is NULL.");
+            Debug.LogError("Enemy: Animator is NULL.");
         }
-        
+
         _startX = transform.position.x;
     }
 
-    // Use virtual so derived classes can override
     protected virtual void Update()
     {
+        if (_isDestroyed)
+        {
+            return; // Skip movement and firing if destroyed
+        }
+
         CalculateMovement();
         if (Time.time > _canFire)
         {
@@ -64,20 +68,19 @@ public class Enemy : MonoBehaviour
         }
     }
 
-    // Use virtual so SmartEnemy or others can override
     protected virtual void FireLaser()
     {
         _fireRate = Random.Range(3.0f, 7.0f);
         _canFire = Time.time + _fireRate;
         GameObject enemyLaser = Instantiate(_laserPrefab, transform.position, Quaternion.identity);
-        Laser[] laser = enemyLaser.GetComponentsInChildren<Laser>();
-        for (int i = 0; i < laser.Length; i++)
+        Laser[] lasers = enemyLaser.GetComponentsInChildren<Laser>();
+        for (int i = 0; i < lasers.Length; i++)
         {
-            laser[i].AssignEnemyLaser();
+            lasers[i].AssignEnemyLaser();
         }
+        Debug.Log($"Enemy {gameObject.name}: Fired laser at {transform.position}");
     }
 
-    // Use virtual so AggressiveEnemy or others can override
     protected virtual void CalculateMovement()
     {
         switch (_movementType)
@@ -94,7 +97,6 @@ public class Enemy : MonoBehaviour
         }
     }
 
-    // Moves enemy straight down
     protected void MoveDown()
     {
         transform.Translate(Vector3.down * _speed * Time.deltaTime);
@@ -105,7 +107,6 @@ public class Enemy : MonoBehaviour
         }
     }
 
-    // Moves enemy down with a side-to-side (sine wave) pattern
     protected void SideToSideMove()
     {
         float newX = _startX + Mathf.Sin(Time.time * _sideFrequency) * _sideAmplitude;
@@ -120,7 +121,6 @@ public class Enemy : MonoBehaviour
         }
     }
 
-    // Moves enemy at a specified angle
     protected void AngleMove()
     {
         float rad = _angle * Mathf.Deg2Rad;
@@ -134,9 +134,9 @@ public class Enemy : MonoBehaviour
         }
     }
 
-    // Handles enemy destruction animation, sound, and cleanup
     protected void DestroyEnemy()
     {
+        _isDestroyed = true; // Mark as destroyed
         if (_animator != null)
         {
             _animator.SetTrigger("OnEnemyDeath");
@@ -155,29 +155,43 @@ public class Enemy : MonoBehaviour
         {
             Debug.LogWarning($"Enemy {gameObject.name}: AudioSource is disabled or has no clip, skipping sound.");
         }
+        Debug.Log($"Enemy {gameObject.name}: Destroyed, waiting 2.8s for animation");
         Destroy(this.gameObject, 2.8f);
     }
 
-    // Use virtual so ShieldedEnemy or others can override
     protected virtual void OnTriggerEnter2D(Collider2D other)
     {
-        if (other.tag == "Player")
+        if (other.CompareTag("Player"))
         {
-            Player player = other.transform.GetComponent<Player>();
+            Player player = other.GetComponent<Player>();
             if (player != null)
             {
                 player.Damage();
             }
+            Debug.Log($"Enemy {gameObject.name}: Collided with player");
             DestroyEnemy();
         }
-        if (other.tag == "Laser")
+        else if (other.CompareTag("Laser"))
         {
-            Destroy(other.gameObject);
-            if (_player != null)
+            Laser laser = other.GetComponent<Laser>();
+            if (laser != null && !laser.IsEnemyLaser)
             {
-                _player.AddScore(10);
+                if (_player != null)
+                {
+                    _player.AddScore(10);
+                }
+                Destroy(other.gameObject);
+                Debug.Log($"Enemy {gameObject.name}: Hit by player laser");
+                DestroyEnemy();
             }
-            DestroyEnemy();
+            else
+            {
+                Debug.Log($"Enemy {gameObject.name}: Ignored enemy laser from {other.gameObject.name}");
+            }
+        }
+        else
+        {
+            Debug.Log($"Enemy {gameObject.name}: Ignored collision with {other.tag} at {other.transform.position}");
         }
     }
 }
